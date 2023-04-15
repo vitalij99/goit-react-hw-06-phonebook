@@ -1,31 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
-import { nanoid } from 'nanoid';
 import { Report } from 'notiflix/build/notiflix-report-aio';
-
 import { Section } from './Section/Section';
 import { ContactForm } from './ContactForm/ContactForm';
 import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
 import { useDispatch, useSelector } from 'react-redux';
+import {
+  createContact,
+  createFilter,
+  deleteContactList,
+} from 'redux/contacts/contactsReducer';
+import { nanoid } from '@reduxjs/toolkit';
 
 export const App = () => {
-  const { contacts } = useSelector(state => state.contacts);
+  const { contacts, FiltersList } = useSelector(state => state.contacts);
   const dispatch = useDispatch();
-  //   const [contacts, setContacts] = useState([]);
-
-  const [filterContacts, setFilter] = useState('');
 
   const addContact = event => {
     event.preventDefault();
-
-    const form = event.target;
-    const { name, number } = form.elements;
-
-    const contact = {
-      name: name.value,
-      number: number.value,
-      id: nanoid(),
-    };
+    const { name, number } = event.target.elements;
     if (contacts.find(contact => contact.name === name.value)) {
       Report.warning(
         'Phonebook Warning',
@@ -34,18 +26,27 @@ export const App = () => {
       );
       return;
     }
-
-    form.reset();
+    const contact = {
+      name: name.value,
+      number: number.value,
+      id: nanoid(),
+    };
+    dispatch(createContact(contact));
+    event.target.reset();
   };
   const deleteContact = id => {
-    // setContacts(prevState => prevState.filter(contact => contact.id !== id));
-    Report.info('Phonebook Info', 'Contact book is empty!', 'Okay');
+    dispatch(deleteContactList(id));
+
+    if (contacts.length === 1) {
+      Report.info('Phonebook Info', 'Contact book is empty!', 'Okay');
+    }
   };
   const inputFilter = event => {
-    setFilter(event.target.value);
+    dispatch(createFilter(event.target.value));
   };
+
   const visibleContact = () => {
-    const normalizeFilter = filterContacts.toLowerCase();
+    const normalizeFilter = FiltersList.toLowerCase();
 
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizeFilter)
@@ -59,7 +60,7 @@ export const App = () => {
       </Section>
       <Section title="Contacts">
         {contacts.length > 1 && (
-          <Filter value={filterContacts} onChange={inputFilter} />
+          <Filter value={FiltersList} onChange={inputFilter} />
         )}
         {contacts.length > 0 && (
           <ContactList

@@ -7,11 +7,19 @@ export const contactsSlice = createSlice({
 
   reducers: {
     createContact: (state, action) => {
-      return [...(state.contacts + action.payload)];
+      state.contacts.push(action.payload);
     },
-    deleteTask(state, action) {},
+    deleteContactList(state, action) {
+      state.contacts = state.contacts.filter(
+        contact => contact.id !== action.payload
+      );
+    },
+    createFilter: (state, action) => {
+      state.FiltersList = action.payload;
+    },
   },
 });
 
 export const contactsReducer = contactsSlice.reducer;
-export const { createContact } = contactsSlice.actions;
+export const { createContact, createFilter, deleteContactList } =
+  contactsSlice.actions;
